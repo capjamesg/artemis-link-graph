@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artemis Link Graph</title>
+    <style>
+        * {
+            color-scheme: light dark;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
+        }
+        img {
+            float: right;
+            max-width: 3rem;
+            /* padding: 0.25rem; */
+        }
+        a {
+            /* text-decoration: none; */
+            /* // use meta[name=theme-color] */
+            color: var(--theme-color);
+        }
+        h1 {
+            margin-top: 0.25rem;
+            margin-bottom: 0;
+        }
+        p, h1, h2, h3 {
+            color: light-dark(black, color-mix(in srgb, #fff 55%, var(--theme-color)));
+        }
+        h1 + p {
+            margin-top: 0.5rem;
+        }
+        body {
+            max-width: 20rem;
+            padding: 0.25rem;
+        }
+        ul {
+            padding-left: 0;
+            list-style-type: none;
+            margin: 0;
+        }
+        button {
+            background-color: var(--theme-color);
+            border: none;
+            border-radius: 0.25rem;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.25rem;
+        }
+        html {
+            border-top: 0.25rem solid var(--theme-color);
+            min-width: 20rem;
+        }
+        .domain {
+            margin-top: 0;
+            color: var(--theme-color);
+            font-size: 0.85rem;
+        }
+        h3 {
+            /* margin: 0; */
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        input {
+            border: 1px solid var(--theme-color);
+            border-radius: 0.25rem;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #unified-extensions-button[attention] > .toolbarbutton-icon,
+.unified-extensions-item[attention] > .unified-extensions-item-action-button.toolbarbutton-1 > .toolbarbutton-badge-stack {
+  background-image: none !important;
+}
+    </style>
+</head>
+<body>
+    <img src="https://artemis.jamesg.blog/assets/mascot.png" />
+    <section id="link-container" style="display: none;">
+        <h1>Artemis</h1>
+        <ul id="links"></ul>
+        <ul id="second-degree-links"></ul>
+        <ul id="same-site-links"></ul>
+    </section>
+    <section id="no-link-container" style="display: none;">
+        <h1>Artemis</h1>
+        <p>There are no links to this page.</p>
+    </section>
+    <section id="signin" style="display: none;">
+        <h2>Artemis Link Graph</h2>
+        <p>This extension lets you see when sites you follow have linked to a web page.</p>
+        <form id="signin-form">
+            <input type="password" id="api-key" placeholder="API key" />
+            <button type="submit" id="signin_button">Sign in</button>
+        </form>
+    </section>
+    <script src="app.js"></script>
+</body>
+</html>

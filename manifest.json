@@ -1,0 +1,28 @@
+{
+  "name": "Artemis Link Graph",
+  "description": "See when a site you follow has linked to the page you are viewing.",
+  "version": "1.0.3",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "mascot.png"
+  },
+  "browser_action": {},
+  "permissions": ["tabs", "storage", "action", "scripting", "activeTab"],
+  "background": {
+      "service_worker": "background.js",
+      "scripts": ["background.js"]
+  },
+  "host_permissions": ["https://artemis.jamesg.blog/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["app.js"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "artemis-link-graph@artemis"
+    }
+  }
+}
