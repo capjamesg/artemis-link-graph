@@ -128,7 +128,9 @@ function getCache() {
                 if (linksForPage.length > 0) {
                     // console.log("Links found for page:", linksForPage);
                     chrome.action.setBadgeText({ text: linksForPage.length.toString() });
-                    chrome.action.setBadgeBackgroundColor({ color: "royalblue" });
+                    // theme color
+                    console.log(cache["preferences"]);
+                    chrome.action.setBadgeBackgroundColor({ color: "#" + cache["preferences"]["theme_color"] || "royalblue" });
                 }
 
                 if (subscriptions.includes(tabDomain)) {
@@ -161,7 +163,7 @@ function getCache() {
                 tabPath = tabPath || "/";
                 // remove www from domain
                 tabDomain = tabDomain.replace(/^www\./, '');
-                
+
                 sendResponse({ 
                     links: cache["links"]?.[tabDomain]?.[tabPath] || [],
                     failed: failed, 
