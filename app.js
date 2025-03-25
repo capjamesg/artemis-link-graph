@@ -1,13 +1,22 @@
-function normalizeUrl (url) {
-    // remove protocol
-    url = url.replace(/^https?:\/\//, '');
-    // remove trailing slash
-    url = url.replace(/\/$/, '');
-    if (url.startsWith("www.")) {
-        url = url.slice(4);
+function normalizeUrl(inputUrl) {
+    try {
+        if (!inputUrl.startsWith("https://") && !inputUrl.startsWith("http://")) {
+            inputUrl = "https://" + inputUrl;
+        }
+      const url = new URL(inputUrl)
+      let hostname = url.hostname.replace(/^www\./, '');
+      let pathname = url.pathname.replace(/\/+$/, '');
+      let normalized = `${hostname}${pathname}`;
+      if (url.search) normalized += url.search;
+      if (url.hash) normalized += url.hash;
+  
+      return normalized;
+    } catch (e) {
+      console.error('Invalid URL:', inputUrl);
+      return null;
     }
-    return url;
-}
+  }
+  
 
 var meta = document.createElement("meta");
 meta.name = "theme-color";
@@ -81,8 +90,9 @@ function addLinksToList (response, linkList, same_site=false, second_degree=fals
 
         // trim trailing slash
         var url = normalizeUrl(linksForPage[i].link);
+        var normalised_url = normalizeUrl(pageUrl);
 
-        if (response.bidirectional_links[linksForPage[i].link]) {
+        if (response.bidirectional_links[normalised_url] && response.bidirectional_links[normalised_url].includes(linksForPage[i].link)) {
             a.style.color = "green";
         }
         // anchor shouldn't show https://

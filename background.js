@@ -1,14 +1,26 @@
-function normalizeUrl (url) {
-    // remove protocol
-    url = url.replace(/^https?:\/\//, '');
-    // remove trailing slash
-    url = url.replace(/\/$/, '');
-    // remove www. from start
-    if (url.startsWith("www.")) {
-        url = url.slice(4);
+function normalizeUrl(inputUrl) {
+    try {
+      const url = new URL(inputUrl);
+  
+      // Remove 'www.' from hostname
+      let hostname = url.hostname.replace(/^www\./, '');
+  
+      // Remove trailing slashes from pathname
+      let pathname = url.pathname.replace(/\/+$/, '');
+  
+      // Reconstruct the normalized URL without protocol
+      let normalized = `${hostname}${pathname}`;
+  
+      // Include query and hash if present
+      if (url.search) normalized += url.search;
+      if (url.hash) normalized += url.hash;
+  
+      return normalized;
+    } catch (e) {
+      console.error('Invalid URL:', inputUrl);
+      return null;
     }
-    return url;
-}
+  }  
 
 var ENDPOINT_URL = "https://artemis.jamesg.blog";
 
@@ -105,31 +117,21 @@ function getCache() {
             chrome.action.setIcon({"path": "mascot.png"});
             if (!tabId) return;
             chrome.tabs.get(tabId, function (tab) {
-                console.log("Tab:", tab);
                 chrome.action.setBadgeText({ text: "" });
                 if (!cache) return; // Ensure cache is available
 
                 var subscriptions = cache["subscriptions"];
 
-                var tabUrl = normalizeUrl(tab.url);
                 var tabDomain = new URL(tab.url).hostname;
                 var tabPath = new URL(tab.url).pathname;
-                // trim / from path
+
                 tabPath = tabPath.replace(/\/$/, '');
-                // if no path, set to /
                 tabPath = tabPath || "/";
-                // remove www
-                tabDomain = tabDomain.replace(/^www\./, '');
 
                 var linksForPage = cache["links"]?.[tabDomain]?.[tabPath] || [];
 
-                // console.log("Links for page:", linksForPage);
-
                 if (linksForPage.length > 0) {
-                    // console.log("Links found for page:", linksForPage);
                     chrome.action.setBadgeText({ text: linksForPage.length.toString() });
-                    // theme color
-                    console.log(cache["preferences"]);
                     chrome.action.setBadgeBackgroundColor({ color: "#" + cache["preferences"]["theme_color"] || "royalblue" });
                 }
 
@@ -141,7 +143,8 @@ function getCache() {
 
         chrome.tabs.onActivated.addListener(updateTab);
         chrome.tabs.onUpdated.addListener(updateTab);
-        // chrome.tabs.onCreated.addListener(updateTab);
+        chrome.tabs.onCreated.addListener(updateTab);
+        chrome.tabs.onReplaced.addListener(updateTab);
 
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             updateTab({ tabId: tabs[0].id });
@@ -149,7 +152,6 @@ function getCache() {
 
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.action === "getLinks") {
-                console.log(cache)
                 if (!cache) {
                     sendResponse({ failed: true });
                     return;
