@@ -91,9 +91,10 @@ function addLinksToList (response, linkList, same_site=false, second_degree=fals
         // trim trailing slash
         var url = normalizeUrl(linksForPage[i].link);
         var normalised_url = normalizeUrl(pageUrl);
-
-        if (response.bidirectional_links[normalised_url] && response.bidirectional_links[normalised_url].includes(linksForPage[i].link)) {
+        console.log(response.bidirectional_links[linksForPage[i].link]);
+        if (response.bidirectional_links[normalised_url] && response.bidirectional_links[normalised_url].includes(linksForPage[i].link) && response.bidirectional_links[linksForPage[i].link] && response.bidirectional_links[linksForPage[i].link].includes(normalised_url)) {
             a.style.color = "green";
+            console.log("bidirectional link", linksForPage[i].link);
         }
         // anchor shouldn't show https://
         if (linksForPage[i].title) {
@@ -124,7 +125,7 @@ function addLinksToList (response, linkList, same_site=false, second_degree=fals
     return added_link;
 }
 
-chrome.tabs.query({ active: true, currentWindow: true }, function (tabs, failed) {
+chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var tab = tabs[0];
     pageUrl = tab.url;
     chrome.runtime.sendMessage({ action: "getLinks", url: pageUrl }, function (response) {

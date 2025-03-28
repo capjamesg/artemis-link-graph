@@ -88,63 +88,63 @@ function getCache() {
     });
 }
 
+console.log("Configuring link graph... for today:", today);
 
-    // function process() {
-    console.log("Configuring link graph... for today:", today);
+function updateTab (activeInfo, cache) {
+    var tabId = (typeof activeInfo === "number") ? activeInfo : activeInfo.tabId;
 
-    chrome.storage.local.get(`${CACHE_PREFIX}link-graph-${today}`, (result) => {
-        var cache = result[`${CACHE_PREFIX}link-graph-${today}`] ? JSON.parse(result[`${CACHE_PREFIX}link-graph-${today}`]) : null;
+    // console.log("Updating tab:", tabId);
+    chrome.action.setBadgeText({ text: "" });
+    chrome.action.setIcon({"path": "mascot.png"});
+    if (!tabId) return;
+    chrome.tabs.get(tabId, function (tab) {
+        chrome.action.setBadgeText({ text: "" });
+        if (!cache) return; // Ensure cache is available
 
-        if (!cache) {
-            getCache().then((data) => {
-                cache = data;
-                updateTab();
-            })
-            .catch(err => {
-                failed = true;
-                console.error("Failed to fetch links from Artemis.");
-                console.error(err);
-                chrome.action.setBadgeText({ text: "!" });
-            });
-        }
-        
+        var subscriptions = cache["subscriptions"];
 
-        function updateTab (activeInfo) {
-            var tabId = (typeof activeInfo === "number") ? activeInfo : activeInfo.tabId;
+        var tabDomain = new URL(tab.url).hostname;
+        var tabPath = new URL(tab.url).pathname;
 
-            // console.log("Updating tab:", tabId);
-            chrome.action.setBadgeText({ text: "" });
-            chrome.action.setIcon({"path": "mascot.png"});
-            if (!tabId) return;
-            chrome.tabs.get(tabId, function (tab) {
-                chrome.action.setBadgeText({ text: "" });
-                if (!cache) return; // Ensure cache is available
+        tabPath = tabPath.replace(/\/$/, '');
+        tabPath = tabPath || "/";
 
-                var subscriptions = cache["subscriptions"];
+        var linksForPage = cache["links"]?.[tabDomain]?.[tabPath] || [];
 
-                var tabDomain = new URL(tab.url).hostname;
-                var tabPath = new URL(tab.url).pathname;
-
-                tabPath = tabPath.replace(/\/$/, '');
-                tabPath = tabPath || "/";
-
-                var linksForPage = cache["links"]?.[tabDomain]?.[tabPath] || [];
-
-                if (linksForPage.length > 0) {
-                    chrome.action.setBadgeText({ text: linksForPage.length.toString() });
-                    chrome.action.setBadgeBackgroundColor({ color: "#" + cache["preferences"]["theme_color"] || "royalblue" });
-                }
-
-                if (subscriptions.includes(tabDomain)) {
-                    chrome.action.setIcon({"path": "link_found.png"});
-                }
-            });
+        if (linksForPage.length > 0) {
+            chrome.action.setBadgeText({ text: linksForPage.length.toString() });
+            chrome.action.setBadgeBackgroundColor({ color: "#" + cache["preferences"]["theme_color"] || "royalblue" });
         }
 
-        chrome.tabs.onActivated.addListener(updateTab);
-        chrome.tabs.onUpdated.addListener(updateTab);
-        chrome.tabs.onCreated.addListener(updateTab);
-        chrome.tabs.onReplaced.addListener(updateTab);
+        if (subscriptions.includes(tabDomain)) {
+            chrome.action.setIcon({"path": "link_found.png"});
+        }
+    });
+}
+
+function setupListeners(cache) {
+    chrome.tabs.onActivated.addListener((activeInfo) => {
+        updateTab(activeInfo, cache);
+    });
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        updateTab(tabId, cache);
+    });
+    chrome.tabs.onCreated.addListener((tab) => {
+        updateTab(tab.id, cache);
+    });
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (tabs[0]) updateTab({ tabId: tabs[0].id }, cache);
+    });
+}
+
+
+chrome.storage.local.get(`${CACHE_PREFIX}link-graph-${today}`, (result) => {
+    var cache = result[`${CACHE_PREFIX}link-graph-${today}`] ? JSON.parse(result[`${CACHE_PREFIX}link-graph-${today}`]) : null;
+
+    getCache().then((data) => {
+        cache = data;
+        setupListeners(cache);
 
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             updateTab({ tabId: tabs[0].id });
@@ -180,4 +180,11 @@ function getCache() {
             }
             return true; 
         });
+    })
+    .catch(err => {
+        failed = true;
+        console.error("Failed to fetch links from Artemis.");
+        console.error(err);
+        chrome.action.setBadgeText({ text: "!" });
     });
+});
